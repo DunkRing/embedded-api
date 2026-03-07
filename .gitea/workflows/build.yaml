@@ -36,10 +36,10 @@ jobs:
 
       - name: Download build context
         env:
-          KANIKO_TOKEN: ${{ secrets.KANIKO_TOKEN }}
+          TOKEN: ${{ secrets.GITEA_TOKEN }}
         run: |
           wget -q \
-            --header "Authorization: token ${KANIKO_TOKEN}" \
+            --header "Authorization: token ${TOKEN}" \
             "${GITEA_URL}/api/v1/repos/${{ github.repository }}/archive/main.tar.gz" \
             -O /tmp/context.tar.gz
 
