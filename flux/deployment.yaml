@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: embedding-api
+  namespace: embedded-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: embedding-api
+  template:
+    metadata:
+      labels:
+        app: embedding-api
+    spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      imagePullSecrets:
+        - name: harbor-registry-secret
+      containers:
+        - name: embedding-api
+          image: harbor.prod.skatzi.com/library/embedding-api:latest
+          ports:
+            - containerPort: 8000
+          env:
+            - name: HF_HOME
+              value: /app/.cache/huggingface
+          resources:
+            requests:
+              cpu: "2"
+              memory: "4Gi"
+            limits:
+              cpu: "4"
+              memory: "6Gi"
+          volumeMounts:
+            - name: hf-cache
+              mountPath: /app/.cache/huggingface
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            failureThreshold: 3
+      volumes:
+        - name: hf-cache
+          persistentVolumeClaim:
+            claimName: hf-cache
+---
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: oauth2-proxy-secrets
+  namespace: embedded-api
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: openbao
+  target:
+    name: oauth2-proxy-secrets
+    creationPolicy: Owner
+    deletionPolicy: Retain
+  data:
+    - secretKey: client-id
+      remoteRef:
+        key: hetzner-mgmt/embedded-api/keycloak-oidc
+        property: client-id
+    - secretKey: client-secret
+      remoteRef:
+        key: hetzner-mgmt/embedded-api/keycloak-oidc
+        property: client-secret
+    - secretKey: cookie-secret
+      remoteRef:
+        key: hetzner-mgmt/embedded-api/cookie-secret
+        property: cookie-secret
+
