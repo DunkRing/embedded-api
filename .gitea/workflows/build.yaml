@@ -42,6 +42,8 @@ jobs:
             --header "Authorization: token ${TOKEN}" \
             "${GITEA_URL}/api/v1/repos/${{ github.repository }}/archive/main.tar.gz" \
             -O /kaniko/context.tar.gz
+          echo "=== Tar contents (top level) ==="
+          tar tf /kaniko/context.tar.gz | head -20
 
       - name: Build and push
         run: |
