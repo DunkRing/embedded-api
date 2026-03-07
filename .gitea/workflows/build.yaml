@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: lint
     container:
-      image: gcr.io/kaniko-project/executor:debug
+      image: harbor.prod.skatzi.com/library/kaniko-runner:latest
     steps:
       - name: Configure Harbor credentials
         env:
