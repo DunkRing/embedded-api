@@ -38,9 +38,9 @@ jobs:
           KANIKO_TOKEN: ${{ secrets.KANIKO_TOKEN }}
         run: |
           REPO_URL="${{ github.server_url }}/${{ github.repository }}.git"
-          AUTH_URL="${REPO_URL/https:\/\//https:\/\/oauth2:${KANIKO_TOKEN}@}"
+          AUTH_URL="https://oauth2:${KANIKO_TOKEN}@${REPO_URL#https://}"
           /kaniko/executor \
-            --context "${AUTH_URL}#${{ github.sha }}" \
+            --context "${AUTH_URL}#refs/heads/main" \
             --dockerfile Containerfile \
             --destination "$REGISTRY/$IMAGE:${{ github.sha }}" \
             --destination "$REGISTRY/$IMAGE:latest"
