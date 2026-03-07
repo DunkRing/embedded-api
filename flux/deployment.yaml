@@ -5,6 +5,8 @@ metadata:
   namespace: embedded-api
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: embedding-api
@@ -22,6 +24,7 @@ spec:
       containers:
         - name: embedding-api
           image: harbor.prod.skatzi.com/library/embedding-api:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8000
           env:

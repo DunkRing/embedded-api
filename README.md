@@ -76,8 +76,9 @@ embedding-api/
 │   └── kustomization.yaml
 ├── .gitea/
 │   └── workflows/
-│       └── build.yaml      # CI pipeline
+│       └── build.yaml      # CI pipeline (lint + container build/push)
 ├── Containerfile
+├── Containerfile.kaniko    # Wrapper image for Kaniko CI runner
 ├── Makefile
 └── requirements.txt
 ```
@@ -98,22 +99,41 @@ make dev
 
 The API will be available at `http://localhost:8000/docs`.
 
----
-
-## Building and deploying
-
-**Build image locally (native architecture):**
+**Build and run as a container locally:**
 ```bash
 make build-local
+make run
 ```
 
-**Build and push to Harbor (linux/amd64 for Kubernetes):**
-```bash
-make push REGISTRY=harbor.prod.skatzi.com IMAGE=library/embedding-api TAG=latest
-```
+---
+
+## CI/CD
+
+Pushing to `main` triggers the Gitea Actions pipeline (`.gitea/workflows/build.yaml`), which:
+
+1. **Lints** the code with `ruff`
+2. **Builds** the container image using Kaniko (no Docker daemon required)
+3. **Pushes** to Harbor with both a commit SHA tag and `latest`
+
+The deployment picks up the new image on the next pod restart. Kubernetes manifests are applied via Flux GitOps.
+
+**Required secrets in Gitea repository settings:**
+
+| Secret | Description |
+|--------|-------------|
+| `HARBOR_USERNAME` | Harbor registry username |
+| `HARBOR_PASSWORD` | Harbor registry password |
+
+---
+
+## Deploying
 
 **Apply Kubernetes manifests:**
 ```bash
 kubectl apply -k flux/
 ```
 
+**Trigger a rollout after a new image is pushed:**
+```bash
+kubectl rollout restart deployment/embedding-api -n embedded-api
+```

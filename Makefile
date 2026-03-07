@@ -1,8 +1,4 @@
-REGISTRY ?= registry.example.com
-IMAGE ?= embedding-api
-TAG ?= latest
-
-.PHONY: install dev lint format clean build build-local push run
+.PHONY: install dev lint format clean build-local run
 
 install:
 	python3 -m pip install -r requirements.txt
@@ -18,21 +14,12 @@ format:
 	ruff format app/
 
 build-local:
-	podman build -f Containerfile \
-		-t $(IMAGE):$(TAG) .
-
-build:
-	podman build -f Containerfile \
-		--platform linux/amd64 \
-		-t $(REGISTRY)/$(IMAGE):$(TAG) .
-
-push: build
-	podman push $(REGISTRY)/$(IMAGE):$(TAG)
+	podman build -f Containerfile -t embedding-api:latest .
 
 run:
 	podman run --rm -p 8000:8000 \
 		-v hf-cache:/app/.cache/huggingface \
-		$(IMAGE):$(TAG)
+		harbor.prod.skatzi.com/library/embedding-api:latest
 
 clean:
 	find . -type d -name __pycache__ -exec rm -rf {} +
