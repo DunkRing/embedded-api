@@ -51,3 +51,4 @@ jobs:
             --dockerfile Containerfile \
             --destination "$REGISTRY/$IMAGE:${{ github.sha }}" \
             --destination "$REGISTRY/$IMAGE:latest"
+
