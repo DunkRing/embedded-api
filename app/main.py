@@ -73,9 +73,13 @@ class EmbedResponse(BaseModel):
     inference_ms: float
 
 
-def average_pool(last_hidden_state: torch.Tensor, attention_mask: torch.Tensor) -> torch.Tensor:
+def average_pool(
+    last_hidden_state: torch.Tensor, attention_mask: torch.Tensor
+) -> torch.Tensor:
     mask_expanded = attention_mask.unsqueeze(-1).float()
-    return (last_hidden_state * mask_expanded).sum(dim=1) / mask_expanded.sum(dim=1).clamp(min=1e-9)
+    return (last_hidden_state * mask_expanded).sum(dim=1) / mask_expanded.sum(
+        dim=1
+    ).clamp(min=1e-9)
 
 
 @app.post("/embed", response_model=EmbedResponse)
@@ -84,7 +88,9 @@ async def embed(request: EmbedRequest):
         logger.error("Embed called but model is not loaded")
         raise HTTPException(status_code=503, detail="Model not available")
 
-    logger.info("Embedding %d texts with input_type=%s", len(request.texts), request.input_type)
+    logger.info(
+        "Embedding %d texts with input_type=%s", len(request.texts), request.input_type
+    )
 
     prefixed = [f"{request.input_type}: {t}" for t in request.texts]
 
