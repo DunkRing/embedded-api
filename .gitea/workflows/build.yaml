@@ -7,6 +7,7 @@ on:
 env:
   REGISTRY: harbor.prod.skatzi.com
   IMAGE: library/embedding-api
+  GITEA_URL: https://gitea.prod.skatzi.com
 
 jobs:
   lint:
@@ -37,8 +38,7 @@ jobs:
         env:
           KANIKO_TOKEN: ${{ secrets.KANIKO_TOKEN }}
         run: |
-          REPO_URL="${{ github.server_url }}/${{ github.repository }}.git"
-          AUTH_URL="https://oauth2:${KANIKO_TOKEN}@${REPO_URL#https://}"
+          AUTH_URL="https://oauth2:${KANIKO_TOKEN}@${GITEA_URL#https://}/${{ github.repository }}.git"
           /kaniko/executor \
             --context "${AUTH_URL}#refs/heads/main" \
             --dockerfile Containerfile \
