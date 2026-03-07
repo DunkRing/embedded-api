@@ -34,13 +34,19 @@ jobs:
             "$(printf '%s' "$HARBOR_AUTH" | base64)" \
             > /kaniko/.docker/config.json
 
-      - name: Build and push
+      - name: Download build context
         env:
           KANIKO_TOKEN: ${{ secrets.KANIKO_TOKEN }}
         run: |
-          ARCHIVE_URL="${GITEA_URL}/api/v1/repos/${{ github.repository }}/archive/main.tar.gz?token=${KANIKO_TOKEN}"
+          wget -q \
+            --header "Authorization: token ${KANIKO_TOKEN}" \
+            "${GITEA_URL}/api/v1/repos/${{ github.repository }}/archive/main.tar.gz" \
+            -O /tmp/context.tar.gz
+
+      - name: Build and push
+        run: |
           /kaniko/executor \
-            --context "${ARCHIVE_URL}" \
+            --context "tar:///tmp/context.tar.gz" \
             --context-sub-path "embedded-api-main" \
             --dockerfile Containerfile \
             --destination "$REGISTRY/$IMAGE:${{ github.sha }}" \
