@@ -38,7 +38,7 @@ jobs:
         env:
           KANIKO_TOKEN: ${{ secrets.KANIKO_TOKEN }}
         run: |
-          ARCHIVE_URL="${GITEA_URL}/${{ github.repository }}/archive/main.tar.gz?token=${KANIKO_TOKEN}"
+          ARCHIVE_URL="${GITEA_URL}/api/v1/repos/${{ github.repository }}/archive/main.tar.gz?token=${KANIKO_TOKEN}"
           /kaniko/executor \
             --context "${ARCHIVE_URL}" \
             --context-sub-path "embedded-api-main" \
